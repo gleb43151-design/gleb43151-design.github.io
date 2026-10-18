@@ -90,7 +90,7 @@ p, li { text-wrap: pretty; }
 /* ===== шапка ===== */
 .topbar {
   position: sticky; top: 0; z-index: 50;
-  background: rgba(11, 13, 26, 0.94);
+  background: rgba(11, 13, 26, 0.96);
   border-bottom: 1px solid var(--hairline);
 }
 .topbar-in { display: flex; align-items: center; justify-content: space-between; padding: 13px 0; }
@@ -109,7 +109,11 @@ p, li { text-wrap: pretty; }
 .topnav button:hover { color: var(--text); }
 .topnav button:hover::after { opacity: 0.8; }
 @media (max-width: 720px) {
-  .topnav { display: flex; overflow-x: auto; scrollbar-width: none; -webkit-overflow-scrolling: touch; max-width: 58vw; }
+  .topnav {
+    display: flex; overflow-x: auto; scrollbar-width: none; -webkit-overflow-scrolling: touch; max-width: 58vw;
+    -webkit-mask-image: linear-gradient(90deg, #000 0, #000 calc(100% - 26px), transparent);
+    mask-image: linear-gradient(90deg, #000 0, #000 calc(100% - 26px), transparent);
+  }
   .topnav::-webkit-scrollbar { display: none; }
   .topnav button { padding: 8px 10px; font-size: 13px; white-space: nowrap; flex: 0 0 auto; }
   .topnav button::after { display: none; }
