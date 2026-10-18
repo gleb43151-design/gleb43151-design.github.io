@@ -8,7 +8,7 @@
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'><defs><linearGradient id='g' x1='0' y1='0' x2='1' y2='1'><stop offset='0' stop-color='%23f2b25c'/><stop offset='1' stop-color='%234fd8c4'/></linearGradient></defs><rect width='64' height='64' rx='16' fill='url(%23g)'/><circle cx='24' cy='32' r='11' fill='%230d0f1e'/><circle cx='44' cy='32' r='5' fill='%230d0f1e'/></svg>">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Spectral:wght@400;500;600;700&family=Golos+Text:wght@400;500;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400..800;1,400..700&family=Golos+Text:wght@400;500;600&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="style.css">
 </head>
 <body>
@@ -37,7 +37,7 @@
 <section class="screen active" id="screen-home">
   <div class="wrap">
     <div class="hero">
-      <div class="kicker"><span class="dot"></span>честное состязание памяти</div>
+      <div class="kicker">состязание памяти: человек и машина</div>
       <h1><span class="human">Вы</span><span class="vs">против</span><span class="machine">ИИ</span></h1>
       <p class="hero-sub">Прочитайте текст, ответьте на вопросы по памяти — и сравните свои ответы с ответами языковой модели на тех же вопросах. Без обмана и приписок: условия объяснены заранее.</p>
       <div class="hero-cta">
@@ -60,19 +60,25 @@
       </div>
       <div class="features">
         <button class="feature" data-nav="setup">
-          <div class="feature-ico">✦</div>
-          <h4>Основная игра</h4>
-          <p>Прочитайте текст, ответьте на вопросы по памяти и сравните себя с моделью.</p>
+          <span class="feature-n">01</span>
+          <div class="feature-body">
+            <h4>Основная игра</h4>
+            <p>Прочитайте текст, ответьте на вопросы по памяти и сравните себя с моделью.</p>
+          </div>
         </button>
         <button class="feature" data-nav="span">
-          <div class="feature-ico">⌗</div>
-          <h4>Тест объёма памяти</h4>
-          <p>Сколько цифр вы удержите подряд? Мини-опыт по мотивам классических исследований.</p>
+          <span class="feature-n">02</span>
+          <div class="feature-body">
+            <h4>Тест объёма памяти</h4>
+            <p>Сколько цифр вы удержите подряд? Мини-опыт по мотивам классических исследований.</p>
+          </div>
         </button>
         <button class="feature" data-nav="myths">
-          <div class="feature-ico">?</div>
-          <h4>Мифы о памяти</h4>
-          <p>Десять утверждений о памяти человека и ИИ — проверьте, какие выдерживают проверку.</p>
+          <span class="feature-n">03</span>
+          <div class="feature-body">
+            <h4>Мифы о памяти</h4>
+            <p>Десять утверждений о памяти человека и ИИ — проверьте, какие выдерживают проверку.</p>
+          </div>
         </button>
       </div>
     </div>
