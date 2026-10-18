@@ -95,20 +95,49 @@
     return answerTokens.some((a) => a.slice(0, Math.min(4, a.length)) === stem);
   }
 
+  const NEG = new Set(['не', 'нет', 'никак', 'ни']);
+
+  function tokMatchSingle(tok, a) {
+    if (/^\d/.test(tok)) return a === tok || a.replace(':', '') === tok.replace(':', '');
+    if (tok.length < 2) return true;
+    return a.slice(0, Math.min(4, a.length)) === tok.slice(0, Math.min(4, tok.length));
+  }
+
   function gradeFactual(raw, q) {
     const n = normalize(raw);
     if (!n) return false;
+    // «X или Y» — несовместимые варианты не принимаются
+    if (/\sили\s/.test(n)) return false;
     const at = n.split(' ');
     return q.accept.some((variant) => {
       const vt = normalize(variant).split(' ').filter((w) => w && !STOP.has(w));
-      return vt.length > 0 && vt.every((tok) => tokenMatches(tok, at));
+      if (!vt.length) return false;
+      // каждый токен должен найтись в ответе — и хотя бы одно вхождение
+      // не должно стоять после отрицания («не 87» — не ответ)
+      return vt.every((tok) => {
+        const positions = [];
+        at.forEach((a, idx) => { if (tokMatchSingle(tok, a)) positions.push(idx); });
+        return positions.some((p) => !(p > 0 && NEG.has(at[p - 1])));
+      });
     });
   }
 
   function isRefusal(raw) {
     const n = normalize(raw);
     if (!n) return false;
-    return /нет ответ|не указан|не сказан|нет данных|неизвестн|не говорит|отсутств|нет в тексте|не привод|не назван|не сообщ/.test(n);
+    const m = n.match(/нет ответ\w*|не указан\w*|не сказан\w*|нет данных|неизвестн\w*|не говорит\w*|отсутств\w*|нет в тексте|не привод\w*|не назван\w*|не сообщ\w*/);
+    if (!m) return false;
+    // отрезаем фразу отказа: если после неё осталась содержательная догадка
+    // («нет ответа, но думаю, 20 градусов») — это не отказ, а догадка
+    let rest = n.replace(m[0], ' ').replace(/\b(но|однако|просто|все|же|и)\b/g, ' ');
+    const CTX = new Set(['текст','тексте','текстом','источнике','источника','материале','сведений','сведения',
+      'информации','данных','ответа','ответ','указано','сказано','температура','температуры','погода','погоды',
+      'вместимость','путёвка','путевка','маяк','маяку','маяка','контейнер','контейнера','стоимость','воздуха',
+      'времени','время','день','дня','лет','минут','минуты','слов','документ','документе','авторы','автора',
+      'глубина','глубины','врач','врача','порог','пороги','фамилия','фамилии','имя','имени']);
+    const restWords = rest.split(' ').filter((w) => w && w.length > 2 && !CTX.has(w) && !STOP.has(w));
+    if (restWords.length > 0 || /\d/.test(rest)) return false;
+    return true;
   }
   function gradeCard(card, answers) {
     const res = { factual: 0, refusals: 0, unfounded: 0, perQ: [] };
@@ -138,12 +167,28 @@
     return arr[Math.floor(Math.random() * arr.length)];
   }
 
+  // детерминированное перемешивание вопросов: порядок фиксирован для карточки,
+  // типы (F/I/U) не идут монолитными блоками подряд
+  function questionOrder(card) {
+    let seed = 0;
+    for (const ch of card.id) seed = (seed * 31 + ch.charCodeAt(0)) >>> 0;
+    const idx = card.questions.map((_, i) => i);
+    const rnd = () => { seed = (seed * 1103515245 + 12345) >>> 0; return seed / 4294967296; };
+    for (let i = idx.length - 1; i > 0; i--) {
+      const j = Math.floor(rnd() * (i + 1));
+      [idx[i], idx[j]] = [idx[j], idx[i]];
+    }
+    return idx;
+  }
+
   /* ---------- навигация ---------- */
   function nav(target) {
     stopTimers();
     if (target === 'home') show('home');
     if (target === 'how') { show('home'); setTimeout(() => $('#how').scrollIntoView({ behavior: 'smooth' }), 60); }
     if (target === 'setup') { resetSetup(); show('setup'); }
+    if (target === 'span') { spanReset(); show('span'); }
+    if (target === 'myths') { mythsReset(); show('myths'); }
   }
   document.addEventListener('click', (e) => {
     const b = e.target.closest('[data-nav]');
@@ -183,13 +228,19 @@
     startReading();
   });
 
+  $('#btn-warmup').addEventListener('click', () => {
+    S.card = window.CARDS.find((c) => c.id === 'U300-P') || window.CARDS[0];
+    S.mode = selMode || 'memory';
+    startReading();
+  });
+
   /* ---------- чтение ---------- */
   function startReading() {
     const c = S.card;
     const words = c.text.split(/\s+/).filter(Boolean).length;
     S.readSeconds = Math.max(30, Math.round((words / READ_WPM) * 60));
     $('#read-title').textContent = c.title;
-    $('#read-meta').textContent = `${c.kind} · ${words} слов · целевой блок фактов ≈ ${c.posPlan}% длины`;
+    $('#read-meta').textContent = `${c.kind} · ${words} слов · ${S.readSeconds} секунд на чтение`;
     $('#read-text').innerHTML = c.text
       .split('\n\n')
       .map((p) => '<p>' + p.replace(/&/g, '&').replace(/</g, '<') + '</p>')
@@ -220,7 +271,7 @@
   $('#btn-read-done').addEventListener('click', finishReading);
 
   /* ---------- отвлечение ---------- */
-  const SYMS = '★◆●▲✦◐';
+  const SYMS = 'ЛМНКРТСП'; // типируемые на обычной клавиатуре
   function randomSeq(n) {
     let out = '';
     for (let i = 0; i < n; i++) out += SYMS[Math.floor(Math.random() * SYMS.length)];
@@ -246,6 +297,7 @@
     if (S.phase !== 'distract') return;
     stopTimers();
     S.phase = 'quiz';
+    S.order = questionOrder(S.card);
     S.answers = new Array(10).fill('');
     S.qIndex = 0;
     const side = $('#textside');
@@ -280,7 +332,7 @@
     $('#quiz-progress').textContent = `Вопрос ${i + 1} из 10`;
     $('#quiz-bar-fill').style.width = (i / 10) * 100 + '%';
     $('#q-num').textContent = 'вопрос ' + (i + 1);
-    $('#q-text').textContent = c.questions[i].q;
+    $('#q-text').textContent = c.questions[S.order[i]].q;
     const inp = $('#q-input');
     inp.value = S.answers[i] || '';
     inp.focus();
@@ -321,7 +373,10 @@
     S.phase = 'results';
     saveCurrent();
     const card = S.card;
-    const mine = gradeCard(card, S.answers);
+    // ответы хранятся в порядке предъявления — пересобираем по номерам вопросов
+    const ansByQ = new Array(10).fill('');
+    for (let p = 0; p < 10; p++) ansByQ[S.order[p]] = S.answers[p] || '';
+    const mine = gradeCard(card, ansByQ);
     const models = gradeCard(card, card.model.answers);
 
     $('#score-you').textContent = mine.A + '%';
@@ -342,16 +397,19 @@
     $('#modelcard').innerHTML =
       `Архивный ответ модели: <b>${card.model.name}</b>, дата фиксации — ${card.model.date}, ` +
       `${card.model.access}, запусков — ${card.model.runs}. Ответы сохранены заранее и не пересчитываются на ходу; ` +
-      `тот же текст, те же вопросы, что были у вас.`;
+      `тот же текст, те же вопросы, что были у вас. Положение блока целевых фактов в этой карточке — ` +
+      `примерно ${card.posPlan}% длины текста.`;
 
     const bd = $('#breakdown');
     bd.innerHTML = '';
-    card.questions.forEach((q, i) => {
+    for (let p = 0; p < 10; p++) {
+      const i = S.order[p];
+      const q = card.questions[i];
       const r = mine.perQ[i];
       const mok = models.perQ[i].ok;
       const div = document.createElement('div');
       div.className = 'bq';
-      const yourAns = (S.answers[i] || '').trim() || '— пусто —';
+      const yourAns = (ansByQ[i] || '').trim() || '— пусто —';
       div.innerHTML =
         `<div class="bq-head"><span class="bq-n">№${i + 1}</span><span class="bq-q"></span>` +
         `<span class="mark ${r.ok ? 'ok' : 'no'}">${r.ok ? 'верно' : (q.type === 'U' ? (r.kind === 'unfounded' ? 'догадка' : 'пропуск') : 'ошибка')}</span></div>` +
@@ -365,7 +423,7 @@
       div.querySelectorAll('.row span:last-child')[2].textContent = q.key;
       div.querySelector('.src').textContent = 'Основание: ' + q.source;
       bd.appendChild(div);
-    });
+    }
 
     show('results');
   }
@@ -384,5 +442,172 @@
     S.mode = selMode;
     startReading();
   });
+
+  /* ---------- тест объёма рабочей памяти ---------- */
+  const SP = { level: 3, seq: '', phase: 'idle', best: 0, timer: null };
+
+  function plural(n, one, few, many) {
+    const m10 = n % 10, m100 = n % 100;
+    if (m10 === 1 && m100 !== 11) return one;
+    if (m10 >= 2 && m10 <= 4 && (m100 < 12 || m100 > 14)) return few;
+    return many;
+  }
+
+  function spanReset() {
+    clearInterval(SP.timer);
+    SP.phase = 'idle';
+    $('#span-intro').hidden = false;
+    $('#span-play').hidden = true;
+    $('#span-result').hidden = true;
+  }
+
+  function spanStart() {
+    SP.level = 3;
+    spanRound();
+  }
+
+  function spanRound() {
+    SP.phase = 'show';
+    SP.seq = Array.from({ length: SP.level }, () => Math.floor(Math.random() * 10)).join('');
+    $('#span-intro').hidden = true;
+    $('#span-result').hidden = true;
+    $('#span-play').hidden = false;
+    $('#span-progress').textContent = 'Длина последовательности: ' + SP.level + ' ' + plural(SP.level, 'цифра', 'цифры', 'цифр');
+    const d = $('#span-digits');
+    const input = $('#span-input');
+    input.value = '';
+    input.hidden = true;
+    $('#span-check').hidden = true;
+    clearInterval(SP.timer);
+    d.textContent = '';
+    let i = 0;
+    SP.timer = setInterval(() => {
+      if (i < SP.seq.length) {
+        d.textContent += SP.seq[i] + ' ';
+        i++;
+      } else {
+        clearInterval(SP.timer);
+        setTimeout(() => {
+          if (SP.phase !== 'show') return;
+          d.textContent = '· · ·';
+          input.hidden = false;
+          $('#span-check').hidden = false;
+          input.focus();
+          SP.phase = 'answer';
+        }, 800);
+      }
+    }, 800);
+  }
+
+  function spanCheck() {
+    if (SP.phase !== 'answer') return;
+    const v = ($('#span-input').value || '').replace(/\D/g, '');
+    if (v === SP.seq) {
+      SP.level++;
+      spanRound();
+    } else {
+      SP.phase = 'done';
+      SP.best = Math.max(SP.best, SP.level - 1);
+      $('#span-play').hidden = true;
+      $('#span-result').hidden = false;
+      const res = SP.level - 1;
+      $('#span-span').textContent = res;
+      $('#span-span-lbl').textContent = plural(res, 'цифра', 'цифры', 'цифр') + ' подряд';
+      $('#span-explain').textContent =
+        'Вы воспроизвели ' + res + ' ' + plural(res, 'цифру', 'цифры', 'цифр') + ' подряд. Для справки: по данным Н. Коуэна, ' +
+        'при контроле повторения рабочая память удерживает около 3–5 блоков; «магическое число 7±2» Дж. Миллера ' +
+        'относится к другим условиям измерения. Это упрощённая демонстрация, а не лабораторная диагностика.';
+    }
+  }
+
+  $('#span-start').addEventListener('click', spanStart);
+  $('#span-again').addEventListener('click', spanStart);
+  $('#span-check').addEventListener('click', spanCheck);
+  $('#span-input').addEventListener('keydown', (e) => { if (e.key === 'Enter') spanCheck(); });
+
+  /* ---------- мифы о памяти ---------- */
+  const MYTHS = [
+    { text: 'Человеческая память работает как видеозапись: события сохраняются в точности такими, какими были.',
+      truth: false,
+      explain: 'Воспоминание — реконструкция, а не копия: оно перестраивается при каждом извлечении и подвержено внушению (Э. Лофтус).' },
+    { text: 'Рабочая память человека удерживает примерно 3–5 блоков информации.',
+      truth: true,
+      explain: 'По обзору Н. Коуэна, при контроле повторения и укрупнения центральная оценка — около четырёх блоков. «7±2» Дж. Миллера относится к другим условиям измерения.' },
+    { text: 'Начало и конец списка слов запоминаются лучше, чем середина.',
+      truth: true,
+      explain: 'Это классический эффект серийной позиции (Б. Мёрдок, 1962). Для связного текста он проверяется отдельно — чем и занимается этот проект.' },
+    { text: 'Языковая модель «помнит» ваши прошлые разговоры после закрытия сессии.',
+      truth: false,
+      explain: 'Модель работает только с текущим контекстом запроса. История чата передаётся заново каждым сообщением; «память» между сессиями — функция сервиса, а не самой модели.' },
+    { text: 'Чем больше контекстное окно модели, тем точнее она отвечает на вопросы по длинному тексту.',
+      truth: false,
+      explain: 'Не обязательно: в работе Lost in the Middle качество ответов снижалось, когда важные сведения были в середине длинного контекста, а RULER показал, что не все модели отрабатывают заявленную длину.' },
+    { text: 'Если человек уверенно «вспоминает» деталь, значит, она действительно была.',
+      truth: false,
+      explain: 'В опытах Рёдигера и Макдермотт участники уверенно вспоминали слова, которых не было. Уверенность — не доказательство точности.' },
+    { text: 'Проверка себя после чтения помогает запоминанию сильнее, чем простое перечитывание.',
+      truth: true,
+      explain: 'В исследовании Рёдигера и Карпике предварительное извлечение материала улучшало его отсроченное воспроизведение по сравнению с повторным чтением.' },
+    { text: 'Человек может по команде «стереть» конкретное воспоминание из памяти.',
+      truth: false,
+      explain: 'Произвольное удаление отдельного следа памяти исследованиями не подтверждается: забывание подчиняется другим закономерностям.' },
+    { text: 'Модели могут ошибаться в середине длинных текстов — по форме это напоминает человеческие эффекты первичности и недавности.',
+      truth: true,
+      explain: 'В препринте Сальваторе и соавторов U-образная кривая у моделей напоминает серийные эффекты человека. Похожая форма ошибок не доказывает одинакового механизма.' },
+    { text: 'Все люди запоминают тексты одинаково, различия — только в старании.',
+      truth: false,
+      explain: 'На запоминание влияют группировка материала, знакомство с темой и условия задания — поэтому в проекте используются сопоставимые тексты и фиксируются условия.' },
+  ];
+  let mi = 0, mscore = 0, manswered = false;
+
+  function mythsReset() {
+    mi = 0; mscore = 0;
+    $('#myth-result').hidden = true;
+    $('#myth-card').hidden = false;
+    mythsShow();
+  }
+
+  function mythsShow() {
+    manswered = false;
+    const m = MYTHS[mi];
+    $('#myth-progress').textContent = 'Утверждение ' + (mi + 1) + ' из ' + MYTHS.length;
+    $('#myth-text').textContent = m.text;
+    $('#myth-feedback').hidden = true;
+    $('#myth-next').hidden = true;
+    $('#myth-true').disabled = false;
+    $('#myth-false').disabled = false;
+  }
+
+  function mythsAnswer(v) {
+    if (manswered) return;
+    manswered = true;
+    const m = MYTHS[mi];
+    const ok = v === m.truth;
+    if (ok) mscore++;
+    $('#myth-true').disabled = true;
+    $('#myth-false').disabled = true;
+    const fb = $('#myth-feedback');
+    fb.hidden = false;
+    fb.classList.remove('ok', 'no');
+    fb.classList.add(ok ? 'ok' : 'no');
+    $('#myth-verdict').textContent = ok ? 'Верно!' : 'Не совсем.';
+    $('#myth-explain').textContent = m.explain;
+    const nx = $('#myth-next');
+    nx.hidden = false;
+    nx.textContent = mi + 1 < MYTHS.length ? 'Дальше' : 'Итоги';
+  }
+
+  function mythsNext() {
+    mi++;
+    if (mi < MYTHS.length) { mythsShow(); return; }
+    $('#myth-card').hidden = true;
+    $('#myth-result').hidden = false;
+    $('#myth-score').textContent = mscore;
+  }
+
+  $('#myth-true').addEventListener('click', () => mythsAnswer(true));
+  $('#myth-false').addEventListener('click', () => mythsAnswer(false));
+  $('#myth-next').addEventListener('click', mythsNext);
+  $('#myth-restart').addEventListener('click', mythsReset);
 
 })();

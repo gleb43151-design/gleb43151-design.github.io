@@ -24,6 +24,8 @@
     <nav class="topnav">
       <button data-nav="home">Главная</button>
       <button data-nav="setup">Играть</button>
+      <button data-nav="span">Тест памяти</button>
+      <button data-nav="myths">Мифы</button>
       <button data-nav="how">Как это устроено</button>
     </nav>
   </div>
@@ -56,6 +58,23 @@
         <div class="stat"><div class="num">10</div><div class="lbl">вопросов в каждом раунде</div></div>
         <div class="stat"><div class="num">2</div><div class="lbl">режима: по памяти и с текстом</div></div>
       </div>
+      <div class="features">
+        <button class="feature" data-nav="setup">
+          <div class="feature-ico">✦</div>
+          <h4>Основная игра</h4>
+          <p>Прочитайте текст, ответьте на вопросы по памяти и сравните себя с моделью.</p>
+        </button>
+        <button class="feature" data-nav="span">
+          <div class="feature-ico">⌗</div>
+          <h4>Тест объёма памяти</h4>
+          <p>Сколько цифр вы удержите подряд? Мини-опыт по мотивам классических исследований.</p>
+        </button>
+        <button class="feature" data-nav="myths">
+          <div class="feature-ico">?</div>
+          <h4>Мифы о памяти</h4>
+          <p>Десять утверждений о памяти человека и ИИ — проверьте, какие выдерживают проверку.</p>
+        </button>
+      </div>
     </div>
 
     <div class="section" id="how">
@@ -63,7 +82,7 @@
       <p class="section-sub">Каждая партия устроена одинаково — так же, как в исследовании, на котором основана игра.</p>
       <div class="steps">
         <div class="step"><div class="n">1</div><h4>Чтение</h4><p>На текст даётся время из расчёта 200 слов в минуту. Перечитывать в пределах времени можно.</p></div>
-        <div class="step"><div class="n">2</div><h4>Пауза 30 секунд</h4><p>Текст скрывается, а вы переписываете короткую последовательность символов — чтобы очистить рабочую память.</p></div>
+        <div class="step"><div class="n">2</div><h4>Пауза 30 секунд</h4><p>Текст скрывается, а вы переписываете короткую последовательность букв — чтобы снизить влияние мысленного повторения.</p></div>
         <div class="step"><div class="n">3</div><h4>Десять вопросов</h4><p>Шесть — на прямые факты, два — на простой вывод, и ещё два, ответа на которые в тексте нет. На ответы — 6 минут.</p></div>
         <div class="step"><div class="n">4</div><h4>Разбор</h4><p>Вы видите свой счёт, архивный ответ модели и предложение текста, где содержится ответ.</p></div>
       </div>
@@ -73,7 +92,7 @@
           <h4>Ваша память</h4>
           <ul>
             <li>рабочая память удерживает 3–5 блоков информации</li>
-            <li>факты из середины текста запоминаются хуже крайних</li>
+            <li>в классических опытах середина списка запоминается хуже краёв; для связного текста это проверяется отдельно</li>
             <li>в памяти есть пробелы — и мозг нередко их «достраивает»</li>
           </ul>
         </div>
@@ -82,8 +101,8 @@
           <h4>Память ИИ</h4>
           <ul>
             <li>весь текст помещается в контекстное окно целиком</li>
-            <li>но и модели ошибаются в середине длинных текстов</li>
-            <li>модель не помнит текст между сессиями — «помнит» только контекст</li>
+            <li>в некоторых тестах модели тоже ошибаются в середине длинных контекстов</li>
+            <li>после закрытия сессии текст модели недоступен: она работает только с текущим контекстом</li>
           </ul>
         </div>
       </div>
@@ -113,6 +132,9 @@
       </div>
       <div class="setup-cta">
         <button class="btn btn-primary btn-lg" id="btn-start" disabled>Начать чтение</button>
+        <div style="margin-top:16px">
+          <button class="btn btn-ghost" id="btn-warmup">Разминка на открытом примере (~150 слов)</button>
+        </div>
       </div>
     </div>
   </div>
@@ -145,7 +167,7 @@
   <div class="wrap">
     <div class="distract">
       <h2>Текст скрыт</h2>
-      <p style="color:var(--text-muted);margin-top:8px">Перепишите последовательность — это пауза на 30 секунд, чтобы очистить рабочую память.</p>
+      <p style="color:var(--text-muted);margin-top:8px">Перепишите последовательность — это пауза на 30 секунд, чтобы снизить влияние мысленного повторения.</p>
       <div class="symbols" id="distract-symbols"></div>
       <input id="distract-input" autocomplete="off" spellcheck="false" placeholder="введите символы" aria-label="Последовательность символов">
       <div class="timer" id="distract-timer" style="margin:24px auto 0;justify-content:center;display:inline-flex"><span id="distract-time">30</span></div>
@@ -217,6 +239,69 @@
   </div>
 </section>
 
+<!-- ================= ТЕСТ ОБЪЁМА ПАМЯТИ ================= -->
+<section class="screen" id="screen-span">
+  <div class="wrap">
+    <div class="span">
+      <div id="span-intro">
+        <h2>Тест объёма рабочей памяти</h2>
+        <p class="section-sub">На экране появятся цифры — по одной. Запомните их и введите по порядку. С каждым верным ответом последовательность становится длиннее на одну цифру.</p>
+        <p class="span-note">Этот мини-опыт показывает, сколько элементов вы удерживаете одновременно. Для справки: по данным Н. Коуэна, при контроле повторения рабочая память удерживает около 3–5 блоков; «магическое число 7±2» Дж. Миллера относится к другим условиям измерения. Это упрощённая демонстрация, а не лабораторная диагностика.</p>
+        <button class="btn btn-primary btn-lg" id="span-start">Начать тест</button>
+      </div>
+      <div id="span-play" hidden>
+        <div class="span-progress" id="span-progress"></div>
+        <div class="span-digits" id="span-digits"></div>
+        <input id="span-input" class="qinput" inputmode="numeric" autocomplete="off" placeholder="Введите цифры по порядку…" hidden>
+        <div class="q-actions" style="justify-content:center">
+          <button class="btn btn-primary" id="span-check" hidden>Проверить</button>
+        </div>
+      </div>
+      <div id="span-result" hidden>
+        <h2>Ваш результат</h2>
+        <div class="span-score"><span class="num" id="span-span">0</span><span class="lbl" id="span-span-lbl">цифры подряд</span></div>
+        <p class="section-sub" id="span-explain"></p>
+        <div class="q-actions" style="justify-content:center">
+          <button class="btn btn-primary" id="span-again">Ещё раз</button>
+          <button class="btn btn-ghost" data-nav="setup">К основной игре</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+<!-- ================= МИФЫ О ПАМЯТИ ================= -->
+<section class="screen" id="screen-myths">
+  <div class="wrap">
+    <div class="myths">
+      <div id="myth-card">
+        <h2>Мифы о памяти</h2>
+        <p class="section-sub">Десять утверждений о памяти человека и ИИ. Ответьте «правда» или «ложь» — и увидите разбор с опорой на исследования.</p>
+        <div class="myth-progress" id="myth-progress"></div>
+        <div class="myth-statement" id="myth-text"></div>
+        <div class="myth-actions">
+          <button class="btn btn-primary" id="myth-true">Правда</button>
+          <button class="btn btn-ghost" id="myth-false">Ложь</button>
+        </div>
+        <div class="myth-feedback" id="myth-feedback" hidden>
+          <div class="myth-verdict" id="myth-verdict"></div>
+          <p id="myth-explain"></p>
+        </div>
+        <div class="q-actions" style="justify-content:center">
+          <button class="btn btn-primary" id="myth-next" hidden>Дальше</button>
+        </div>
+      </div>
+      <div id="myth-result" hidden>
+        <h2>Ваши итоги</h2>
+        <div class="span-score"><span class="num" id="myth-score">0</span><span class="lbl">верных ответов из 10</span></div>
+        <p class="section-sub">Разбор каждого утверждения опирается на науку, на которой построен этот проект: рабочая память, серийная позиция, ложные воспоминания и границы контекста моделей.</p>
+        <div class="q-actions" style="justify-content:center">
+          <button class="btn btn-primary" id="myth-restart">Пройти заново</button>
+          <button class="btn btn-ghost" data-nav="setup">К основной игре</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
 </main>
 
 <footer>

@@ -100,9 +100,14 @@ p, li { text-wrap: pretty; }
   box-shadow: inset 0 0 0 1px rgba(255,255,255,0.25);
 }
 .topnav { display: flex; gap: 4px; }
+.logo { white-space: nowrap; }
 .topnav button { padding: 8px 14px; border-radius: var(--r-full); font-size: 14px; color: var(--text-muted); transition: var(--tr); }
 .topnav button:hover { color: var(--text); background: var(--surface); }
-@media (max-width: 720px) { .topnav { display: none; } }
+@media (max-width: 720px) {
+  .topnav { display: flex; overflow-x: auto; scrollbar-width: none; -webkit-overflow-scrolling: touch; max-width: 62vw; }
+  .topnav::-webkit-scrollbar { display: none; }
+  .topnav button { padding: 8px 10px; font-size: 13px; white-space: nowrap; flex: 0 0 auto; }
+}
 
 /* ===== главный экран ===== */
 .hero { padding: 84px 0 40px; text-align: center; }
@@ -376,3 +381,76 @@ footer { border-top: 1px solid var(--border); padding: 34px 0 44px; margin-top: 
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
 }
+
+/* ===== разделы сайта: тест памяти и мифы ===== */
+.features {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+  margin: 34px 0 8px;
+}
+.feature {
+  text-align: left;
+  padding: 22px 22px 20px;
+  border: 1px solid var(--border);
+  border-radius: var(--r-md);
+  background: var(--surface);
+  transition: transform var(--tr), border-color var(--tr), background var(--tr);
+}
+.feature:hover { transform: translateY(-3px); border-color: var(--border-2); background: var(--surface-2); }
+.feature .feature-ico {
+  width: 38px; height: 38px; display: grid; place-items: center;
+  border-radius: var(--r-sm); font-size: 18px; color: #241605;
+  background: linear-gradient(135deg, var(--human), var(--ai));
+  margin-bottom: 14px;
+}
+.feature h4 { font-family: var(--font-body); font-weight: 600; font-size: 16px; margin-bottom: 6px; }
+.feature p { color: var(--text-muted); font-size: 13.5px; line-height: 1.5; }
+@media (max-width: 820px) { .features { grid-template-columns: 1fr; } }
+
+/* тест объёма памяти */
+.span { max-width: 720px; margin: 0 auto; padding: 56px 0 32px; text-align: center; }
+.span h2 { font-size: clamp(26px, 4vw, 34px); margin-bottom: 12px; }
+.span-note {
+  text-align: left; font-size: 13.5px; color: var(--text-muted); line-height: 1.55;
+  border: 1px solid var(--border); border-radius: var(--r-md);
+  background: var(--surface); padding: 16px 18px; margin: 0 0 26px;
+}
+.span-progress { color: var(--text-faint); font-size: 14px; letter-spacing: 0.04em; margin-bottom: 18px; }
+.span-digits {
+  font-family: var(--font-display);
+  font-size: clamp(40px, 8vw, 64px);
+  letter-spacing: 0.18em;
+  color: var(--text);
+  min-height: 1.4em;
+  margin: 26px 0 22px;
+  font-variant-numeric: tabular-nums;
+}
+.span-score { display: flex; align-items: baseline; justify-content: center; gap: 14px; margin: 18px 0 10px; }
+.span-score .num { font-family: var(--font-display); font-size: 64px; color: var(--human); line-height: 1; }
+.span-score .lbl { color: var(--text-muted); font-size: 15px; }
+
+/* мифы */
+.myths { max-width: 720px; margin: 0 auto; padding: 56px 0 32px; }
+.myths h2 { font-size: clamp(26px, 4vw, 34px); margin-bottom: 12px; }
+.myth-progress { color: var(--text-faint); font-size: 14px; letter-spacing: 0.04em; margin-bottom: 20px; }
+.myth-statement {
+  font-family: var(--font-display);
+  font-size: clamp(20px, 3vw, 26px);
+  line-height: 1.4;
+  margin-bottom: 24px;
+  min-height: 3.2em;
+}
+.myth-actions { display: flex; gap: 12px; flex-wrap: wrap; }
+.myth-feedback {
+  margin-top: 22px; padding: 16px 18px;
+  border-radius: var(--r-md); border: 1px solid var(--border);
+  background: var(--surface); text-align: left;
+}
+.myth-feedback.ok { border-color: rgba(127, 224, 143, 0.35); background: rgba(127, 224, 143, 0.07); }
+.myth-feedback.no { border-color: rgba(255, 115, 133, 0.35); background: rgba(255, 115, 133, 0.07); }
+.myth-verdict { font-weight: 600; margin-bottom: 6px; }
+.myth-feedback.ok .myth-verdict { color: var(--ok); }
+.myth-feedback.no .myth-verdict { color: var(--danger); }
+.myth-feedback p { color: var(--text-muted); font-size: 14.5px; line-height: 1.55; }
+#myth-result { text-align: center; }
