@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Победи ИИ — проверь свою память</title>
+<meta name="description" content="Честное состязание: ваша память против языковой модели. Читайте текст, отвечайте на вопросы и сравнивайте свои ответы с задокументированными ответами ИИ.">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'><defs><linearGradient id='g' x1='0' y1='0' x2='1' y2='1'><stop offset='0' stop-color='%23f2b25c'/><stop offset='1' stop-color='%234fd8c4'/></linearGradient></defs><rect width='64' height='64' rx='16' fill='url(%23g)'/><circle cx='24' cy='32' r='11' fill='%230d0f1e'/><circle cx='44' cy='32' r='5' fill='%230d0f1e'/></svg>">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Spectral:wght@400;500;600;700&family=Golos+Text:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<header class="topbar">
+  <div class="wrap topbar-in">
+    <div class="logo">
+      <span class="logo-mark" aria-hidden="true">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><circle cx="9" cy="12" r="5.5" stroke="#241605" stroke-width="2.4"/><circle cx="17.5" cy="12" r="2.6" fill="#241605"/></svg>
+      </span>
+      Победи ИИ
+    </div>
+    <nav class="topnav">
+      <button data-nav="home">Главная</button>
+      <button data-nav="setup">Играть</button>
+      <button data-nav="how">Как это устроено</button>
+    </nav>
+  </div>
+</header>
+
+<main>
+
+<!-- ================= ГЛАВНАЯ ================= -->
+<section class="screen active" id="screen-home">
+  <div class="wrap">
+    <div class="hero">
+      <div class="kicker"><span class="dot"></span>честное состязание памяти</div>
+      <h1><span class="human">Вы</span><span class="vs">против</span><span class="machine">ИИ</span></h1>
+      <p class="hero-sub">Прочитайте текст, ответьте на вопросы по памяти — и сравните свои ответы с ответами языковой модели на тех же вопросах. Без обмана и приписок: условия объяснены заранее.</p>
+      <div class="hero-cta">
+        <button class="btn btn-primary btn-lg" data-nav="setup">Начать игру</button>
+        <button class="btn btn-ghost btn-lg" data-nav="how">Как это устроено</button>
+      </div>
+      <div class="honest">
+        <h3>
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#f2b25c" stroke-width="1.8"><path d="M12 3l8 4v5c0 5-3.5 8-8 9-4.5-1-8-4-8-9V7l8-4z"/><path d="M9.5 12l2 2 3.5-4"/></svg>
+          Честные правила
+        </h3>
+        <p>В режиме «По памяти» <b>вы отвечаете без текста</b>, а модель отвечала на эти же вопросы, <b>имея текст перед глазами</b>. Это сравнение памяти человека с инструментом, у которого есть источник, — и мы говорим об этом прямо, а не прячем в примечаниях.</p>
+        <p>Ответы модели в игре — <b>архивные</b>: они были получены и сохранены заранее, а не генерируются на ходу. Название модели и дата фиксации указаны в результатах.</p>
+      </div>
+      <div class="stats">
+        <div class="stat"><div class="num">7</div><div class="lbl">текстов в банке</div></div>
+        <div class="stat"><div class="num">3</div><div class="lbl">длины: 300 / 900 / 1800 слов</div></div>
+        <div class="stat"><div class="num">10</div><div class="lbl">вопросов в каждом раунде</div></div>
+        <div class="stat"><div class="num">2</div><div class="lbl">режима: по памяти и с текстом</div></div>
+      </div>
+    </div>
+
+    <div class="section" id="how">
+      <h2 class="section-title">Как проходит раунд</h2>
+      <p class="section-sub">Каждая партия устроена одинаково — так же, как в исследовании, на котором основана игра.</p>
+      <div class="steps">
+        <div class="step"><div class="n">1</div><h4>Чтение</h4><p>На текст даётся время из расчёта 200 слов в минуту. Перечитывать в пределах времени можно.</p></div>
+        <div class="step"><div class="n">2</div><h4>Пауза 30 секунд</h4><p>Текст скрывается, а вы переписываете короткую последовательность символов — чтобы очистить рабочую память.</p></div>
+        <div class="step"><div class="n">3</div><h4>Десять вопросов</h4><p>Шесть — на прямые факты, два — на простой вывод, и ещё два, ответа на которые в тексте нет. На ответы — 6 минут.</p></div>
+        <div class="step"><div class="n">4</div><h4>Разбор</h4><p>Вы видите свой счёт, архивный ответ модели и предложение текста, где содержится ответ.</p></div>
+      </div>
+      <div class="duel" style="margin-top:22px">
+        <div class="duel-card human">
+          <span class="tag">человек</span>
+          <h4>Ваша память</h4>
+          <ul>
+            <li>рабочая память удерживает 3–5 блоков информации</li>
+            <li>факты из середины текста запоминаются хуже крайних</li>
+            <li>в памяти есть пробелы — и мозг нередко их «достраивает»</li>
+          </ul>
+        </div>
+        <div class="duel-card machine">
+          <span class="tag">модель</span>
+          <h4>Память ИИ</h4>
+          <ul>
+            <li>весь текст помещается в контекстное окно целиком</li>
+            <li>но и модели ошибаются в середине длинных текстов</li>
+            <li>модель не помнит текст между сессиями — «помнит» только контекст</li>
+          </ul>
+        </div>
+      </div>
+      <p class="rules-note">Результаты хранятся только в вашем браузере во время сессии и никуда не отправляются. Обновление страницы прерывает попытку — это честно фиксируется правилами, а не скрывается. Игра не измеряет интеллект и не объявляет «победителя в памяти человечества»: она показывает, чем отличаются условия, в которых отвечаете вы и модель.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ================= НАСТРОЙКА ================= -->
+<section class="screen" id="screen-setup">
+  <div class="wrap">
+    <div class="setup">
+      <div class="setup-head">
+        <h2>Новая партия</h2>
+        <p>Выберите длину текста и режим. Карточка подберётся случайно из подходящих.</p>
+      </div>
+      <div class="choice-label">Длина текста</div>
+      <div class="length-grid" id="length-grid">
+        <button class="length-opt" data-length="300"><div class="big">300 слов</div><div class="sm">короткий · ~1,5 мин чтения</div></button>
+        <button class="length-opt" data-length="900"><div class="big">900 слов</div><div class="sm">средний · ~4,5 мин чтения</div></button>
+        <button class="length-opt" data-length="1800"><div class="big">1800 слов</div><div class="sm">длинный · ~9 мин чтения</div></button>
+      </div>
+      <div class="choice-label">Режим</div>
+      <div class="mode-grid" id="mode-grid">
+        <button class="mode-opt" data-mode="memory"><div class="t">По памяти</div><div class="d">Текст исчезает перед вопросами. Вы отвечаете по памяти — как в исследовании.</div></button>
+        <button class="mode-opt" data-mode="text"><div class="t">С текстом</div><div class="d">Текст снова доступен во время ответов. Условия ближе к тем, при которых отвечала модель.</div></button>
+      </div>
+      <div class="setup-cta">
+        <button class="btn btn-primary btn-lg" id="btn-start" disabled>Начать чтение</button>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ================= ЧТЕНИЕ ================= -->
+<section class="screen" id="screen-read">
+  <div class="wrap">
+    <div class="read-head">
+      <div>
+        <h2 id="read-title">Текст</h2>
+        <div class="read-meta" id="read-meta"></div>
+      </div>
+      <div class="timer" id="read-timer">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="13" r="8"/><path d="M12 9v4l2.5 2.5M9 2h6"/></svg>
+        <span id="read-time">0:00</span>
+      </div>
+    </div>
+    <div class="readbar"><div class="readbar-fill" id="readbar-fill"></div></div>
+    <article class="article" id="read-text"></article>
+    <div class="read-done">
+      <button class="btn btn-primary btn-lg" id="btn-read-done">Я прочитал(а) — к вопросам</button>
+      <p class="read-note">Когда время закончится, текст скроется автоматически. Нажать раньше можно.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ================= ОТВЛЕЧЕНИЕ ================= -->
+<section class="screen" id="screen-distract">
+  <div class="wrap">
+    <div class="distract">
+      <h2>Текст скрыт</h2>
+      <p style="color:var(--text-muted);margin-top:8px">Перепишите последовательность — это пауза на 30 секунд, чтобы очистить рабочую память.</p>
+      <div class="symbols" id="distract-symbols"></div>
+      <input id="distract-input" autocomplete="off" spellcheck="false" placeholder="введите символы" aria-label="Последовательность символов">
+      <div class="timer" id="distract-timer" style="margin:24px auto 0;justify-content:center;display:inline-flex"><span id="distract-time">30</span></div>
+    </div>
+  </div>
+</section>
+
+<!-- ================= ВОПРОСЫ ================= -->
+<section class="screen" id="screen-quiz">
+  <div class="wrap">
+    <div class="quiz">
+      <div class="quiz-top">
+        <div class="quiz-progress" id="quiz-progress"></div>
+        <div class="timer" id="quiz-timer">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="13" r="8"/><path d="M12 9v4l2.5 2.5M9 2h6"/></svg>
+          <span id="quiz-time">6:00</span>
+        </div>
+      </div>
+      <div class="quiz-bar"><div class="quiz-bar-fill" id="quiz-bar-fill"></div></div>
+      <div class="qcard" id="qcard">
+        <div class="qn" id="q-num"></div>
+        <h3 id="q-text"></h3>
+        <input class="qinput" id="q-input" placeholder="Ваш ответ…" autocomplete="off">
+        <div class="q-actions">
+          <button class="btn btn-primary" id="q-next">Ответить</button>
+          <button class="q-noanswer" id="q-noanswer">В тексте нет ответа</button>
+        </div>
+        <p class="q-hint">Если в тексте нет достаточных сведений — так и скажите: это отдельный, уважаемый ответ, а не ошибка.</p>
+      </div>
+      <div class="textside" id="textside" hidden>
+        <button class="textside-toggle" id="textside-toggle">
+          <span>Показать текст</span>
+          <span aria-hidden="true">▾</span>
+        </button>
+        <div class="textside-body" id="textside-body"></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ================= РЕЗУЛЬТАТЫ ================= -->
+<section class="screen" id="screen-results">
+  <div class="wrap">
+    <div class="results">
+      <div class="verdict">
+        <div class="v-word" id="v-word"></div>
+        <div class="v-sub" id="v-sub"></div>
+        <div class="scoreduel">
+          <div class="score-side human"><div class="who">Вы</div><div class="val" id="score-you">0%</div></div>
+          <div class="score-vs">:</div>
+          <div class="score-side ai"><div class="who">Модель (архив)</div><div class="val" id="score-ai">0%</div></div>
+        </div>
+        <div class="honest-banner" id="honest-banner"></div>
+      </div>
+      <div class="uscore">
+        <div class="stat"><div class="num" id="u-correct">0</div><div class="lbl">верных ответов из 8 по тексту</div></div>
+        <div class="stat"><div class="num" id="u-refusals">0</div><div class="lbl">корректных отказов из 2 вопросов без ответа</div></div>
+      </div>
+      <div class="modelcard" id="modelcard"></div>
+      <div class="breakdown">
+        <h3>Разбор по вопросам</h3>
+        <div id="breakdown"></div>
+      </div>
+      <div class="results-cta">
+        <button class="btn btn-primary btn-lg" id="btn-again">Играть ещё</button>
+        <button class="btn btn-ghost btn-lg" data-nav="setup">Сменить режим</button>
+      </div>
+    </div>
+  </div>
+</section>
+
+</main>
+
+<footer>
+  <div class="wrap foot">
+    <div>«Победи ИИ» — продукт индивидуального проекта «Память человека и искусственного интеллекта: сравнительное исследование».</div>
+    <div>Результаты не собираются и никуда не отправляются.</div>
+  </div>
+</footer>
+
+<div class="toast" id="toast"></div>
+
+<script src="data1.js"></script>
+<script src="data2.js"></script>
+<script src="data3.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
